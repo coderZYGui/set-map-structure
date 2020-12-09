@@ -1,4 +1,4 @@
-package com.guizy.list;
+package com.set.list;
 
 /**
  * Description: 该类不对外公开,只是为了抽取一些公共的代码

@@ -1,17 +1,27 @@
-package com.guizy.set;
+package com.set.set;
 
-import com.guizy.tree.BinaryTree;
-import com.guizy.tree.RBTree;
+import com.set.tree.BinaryTree;
+import com.set.tree.RBTree;
+
+import java.util.Comparator;
 
 /**
- * Description:
+ * Description: 使用红黑树实现Set
  *
  * @author guizy
  * @date 2020/12/8 23:33
  */
 public class TreeSet<E> implements Set<E> {
 
-    private RBTree<E> tree = new RBTree<>();
+    private RBTree<E> tree;
+
+    public TreeSet() {
+        this(null);
+    }
+
+    public TreeSet(Comparator<E> comparator) {
+        tree = new RBTree<>(comparator);
+    }
 
     @Override
     public int size() {

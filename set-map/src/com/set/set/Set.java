@@ -1,4 +1,4 @@
-package com.guizy.set;
+package com.set.set;
 
 /**
  * Description: Set集合

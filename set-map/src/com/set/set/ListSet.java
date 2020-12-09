@@ -1,10 +1,10 @@
-package com.guizy.set;
+package com.set.set;
 
-import com.guizy.list.DoubleLinkedList;
-import com.guizy.list.List;
+import com.set.list.DoubleLinkedList;
+import com.set.list.List;
 
 /**
- * Description:
+ * Description: 使用双向链表实现Set
  *
  * @author guizy
  * @date 2020/12/8 22:32

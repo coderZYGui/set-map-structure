@@ -1,4 +1,4 @@
-package com.guizy.list;
+package com.set.list;
 
 /**
  * Description: 定义动态数组和链表的公共接口

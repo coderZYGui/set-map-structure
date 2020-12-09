@@ -1,4 +1,4 @@
-package com.guizy.file;
+package com.set.file;
 
 public class FileInfo {
     private int lines;

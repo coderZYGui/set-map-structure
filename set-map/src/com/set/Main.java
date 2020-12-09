@@ -1,10 +1,11 @@
-package com.guizy;
+package com.set;
 
-import com.guizy.file.FileInfo;
-import com.guizy.file.Files;
-import com.guizy.set.ListSet;
-import com.guizy.set.Set;
-import com.guizy.set.TreeSet;
+import com.set.file.FileInfo;
+import com.set.file.Files;
+import com.set.set.ListSet;
+import com.set.set.Set;
+import com.set.set.TreeSet;
+import com.set.util.Times;
 import org.junit.Test;
 
 /**
@@ -32,7 +33,7 @@ public class Main {
 
     @Test
     public void testSrcWords() {
-        FileInfo fileInfo = Files.read("C:\\Users\\guizy1\\Desktop\\src", new String[]{"java"});
+        FileInfo fileInfo = Files.read("C:\\Users\\guizy1\\Desktop\\src\\java\\util", new String[]{"java"});
         System.out.println("文件数量：" + fileInfo.getFiles());
         System.out.println("代码行数：" + fileInfo.getLines());
         String[] words = fileInfo.words();

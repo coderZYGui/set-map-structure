@@ -1,4 +1,4 @@
-package com.guizy.list;
+package com.set.list;
 
 /**
  * Description: 双向链表实现

@@ -1,4 +1,4 @@
-package com.guizy;
+package com.set.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
