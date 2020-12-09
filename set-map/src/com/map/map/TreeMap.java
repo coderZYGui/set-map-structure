@@ -10,6 +10,7 @@ import java.util.Queue;
  * @author guizy1
  * @date 2020/12/9 15:48
  */
+@SuppressWarnings("all")
 public class TreeMap<K, V> implements Map<K, V> {
 
     private static final boolean RED = false;
@@ -139,7 +140,17 @@ public class TreeMap<K, V> implements Map<K, V> {
 
     @Override
     public void traversal(Visitor<K, V> visitor) {
+        if (visitor == null) return;
+        traversal(root, visitor);
+    }
 
+    private void traversal(Node<K, V> node, Visitor<K, V> visitor) {
+        if (node == null || visitor.stop) return;
+
+        traversal(node.left, visitor);
+        if (visitor.stop) return;
+        visitor.visit(node.key, node.value);
+        traversal(node.right, visitor);
     }
 
     private boolean valEquals(V v1, V v2) {
