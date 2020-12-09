@@ -95,7 +95,7 @@ public class BinaryTree<E>{
     }
 
     public interface Visitor<E> {
-        void visit(E element);
+        boolean visit(E element);
     }
 
     // 计算二叉树排序树的高度

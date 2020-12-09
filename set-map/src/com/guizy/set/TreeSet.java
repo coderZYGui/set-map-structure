@@ -49,8 +49,8 @@ public class TreeSet<E> implements Set<E> {
         // 中序遍历
         tree.inorderTraversal(new BinaryTree.Visitor<E>() {
             @Override
-            public void visit(E element) {
-                visitor.visit(element);
+            public boolean visit(E element) {
+                return visitor.visit(element);
             }
         });
     }
