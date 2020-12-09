@@ -1,6 +1,8 @@
 package com.map.map;
 
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Description: TreeMap使用红黑树来实现, 红黑树的节点中存储的是key-value键值对
@@ -111,17 +113,39 @@ public class TreeMap<K, V> implements Map<K, V> {
 
     @Override
     public boolean containsKey(K key) {
-        return false;
+        return node(key) != null;
     }
 
     @Override
     public boolean containsValue(V value) {
+        if (root == null) return false;
+
+        Queue<Node<K, V>> queue = new LinkedList<>();
+        queue.offer(root);
+
+        while (!queue.isEmpty()) {
+            Node<K, V> node = queue.poll();
+            if (valEquals(value, node.value))
+                return true; // 说明存在
+
+            if (node.left != null)
+                queue.offer(node.left);
+
+            if (node.right != null)
+                queue.offer(node.right);
+        }
         return false;
     }
 
     @Override
     public void traversal(Visitor<K, V> visitor) {
 
+    }
+
+    private boolean valEquals(V v1, V v2) {
+        // 如果v1==null,说明为true, 走v2==null, v2等于null的话, 说明v1和v2相等, v2不等于空的话, 返回false
+        // 如果v1!=null, 直接判断v1.equals(v2)是否相等
+        return v1 == null ? v2 == null : v1.equals(v2);
     }
 
     private void afterPut(Node<K, V> node) {
