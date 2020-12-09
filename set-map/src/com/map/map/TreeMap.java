@@ -100,12 +100,13 @@ public class TreeMap<K, V> implements Map<K, V> {
 
     @Override
     public V get(K key) {
-        return null;
+        Node<K, V> node = node(key);
+        return node != null ? node.value : null;
     }
 
     @Override
     public V remove(K key) {
-        return null;
+        return remove(node(key));
     }
 
     @Override
@@ -178,6 +179,232 @@ public class TreeMap<K, V> implements Map<K, V> {
             rotateLeft(grand);
         }
 
+    }
+
+    private void afterRemove(Node<K, V> node, Node<K, V> replacement) {
+        // 删除的节点, 都是叶子节点
+
+        // 如果删除的节点为红色,则不需要处理
+        if (isRed(node)) return;
+
+        // 用于取代node的节点replacement为红色
+        if (isRed(replacement)) {
+            // 将替代节点染为黑色
+            black(replacement);
+            return;
+        }
+
+        // 删除的是根节点
+        Node<K, V> parent = node.parent;
+        if (parent == null) return;
+
+        // 删除黑色的叶子节点(肯定会下溢)
+        // 判断被删除的node是左还是右(如果直接通过sibling()方法,拿到的不准确,因为在remove方法中已经将node置为null了,然后才调用的afterRemove
+        boolean left = parent.left == null || node.isLeftChild();
+        Node<K, V> sibling = left ? parent.right : parent.left;
+        if (left) { // 被删除的节点在左边, 兄弟节点在右边
+            if (isRed(sibling)) {
+                black(sibling);
+                red(parent);
+                rotateLeft(parent);
+                sibling = parent.right;
+            }
+            // 兄弟节点必然是黑色
+            if (isBlack(sibling.left) && isBlack(sibling.right)) {  // 表示node的黑兄弟节点的left,right子节点都是黑节点
+                boolean parentBlack = isBlack(parent);
+                black(parent);
+                red(sibling);
+                if (parentBlack) {
+                    afterRemove(parent, null);
+                }
+            } else { // 表示兄弟节点至少有一个红色子节点,可以向被删除节点的位置借一个节点
+                if (isBlack(sibling.right)) {
+                    rotateRight(sibling);
+                    sibling = parent.right;
+                }
+                color(sibling, colorOf(parent));
+                black(sibling.right);
+                black(parent);
+                rotateLeft(parent);
+            }
+        } else { // 被删除节点在右边, 兄弟节点在左边
+            if (isRed(sibling)) { // 兄弟节点是红色
+                black(sibling);
+                red(parent);
+                rotateRight(parent); // 旋转之后,改变兄弟节点,然后node的兄弟节点就为黑色了
+                // 更换兄弟节点
+                sibling = parent.left;
+            }
+
+            // 兄弟节点必然是黑色
+            if (isBlack(sibling.left) && isBlack(sibling.right)) {  // 表示node的黑兄弟节点的left,right子节点都是黑节点
+                // 兄弟节点没有一个红色子节点(不能借一个节点给你), 父节点要向下跟node的兄弟节点合并
+                /*
+                    首先这里要判断父节点parent的颜色(如果为parent为红色,则根据B树红色节点向其黑色父节点合并原则,parent向下合并,肯定不会
+                    发生下溢; 如果parent为黑色,则说明parent向下合并后,必然也会发生下溢,这里我们当作移除一个叶子结点处理,复用afterRemove
+                 */
+                boolean parentBlack = isBlack(parent);
+                // 下面两行染色的代码,是说明parent为红色的情况
+                black(parent);
+                red(sibling);
+                if (parentBlack) {
+                    afterRemove(parent, null);
+                }
+
+            } else { // 表示兄弟节点至少有一个红色子节点,可以向被删除节点的位置借一个节点
+                // 兄弟节点的左边是黑色, 先将兄弟节点左旋转; 旋转完之后和后面两种的处理方式相同,都是再对父节点进行右旋转
+                if (isBlack(sibling.left)) {
+                    rotateLeft(sibling);
+                    sibling = parent.left; // 因为旋转之后,要更改node的sibling,才能复用下面的染色代码.不然出现bug
+                }
+                // 旋转之后的中心节点继承parent的颜色; 旋转之后的左右节点染为黑色
+                // 先染色,再旋转: 肯定要先对node的sibling先染色
+                color(sibling, colorOf(parent));
+                black(sibling.left);
+                black(parent);
+                rotateRight(parent);
+            }
+        }
+    }
+
+    private V remove(Node<K, V> node) {
+        if (node == null) return null;
+        // node 不为空, 必然要删除结点, 先size--;
+        size--;
+
+        V oldValue = node.value;
+
+        // 删除node是度为2的结点
+        if (node.hasTwoChildren()) {
+            /*//1 找到后继(也可以找到前驱)
+            Node<E> successor = successor(node);
+            //2 用后继结点的值覆盖度为2结点的值
+            node.element = successor.element;
+            //3 删除后继节点
+            node = successor;*/
+
+            //1、找到前驱
+            Node<K, V> predecessor = predecessor(node);
+            //2、用前驱节点的值覆盖度为2节点的值
+            node.key = predecessor.key;
+            node.value = predecessor.value;
+            //3、删除前驱节点
+            node = predecessor;
+        }
+        // 删除node,即删除后继节点 (node节点必然是度为1或0)
+        // 因为node只有一个子节点/0个子节点, 如果其left!=null, 则用node.left来替代, node.left==null, 用node.right来替代,
+        // 若node为叶子节点, 说明, node.left==null, node.right也为null, 则replacement==null;
+        Node<K, V> replacement = node.left != null ? node.left : node.right;
+
+        // 删除node是度为1的结点
+        if (replacement != null) {
+            // 更改parent
+            replacement.parent = node.parent;
+            // 更改parent的left、right的指向
+            if (node.parent == null) {  // node是度为1且是根节点
+                root = replacement;
+            } else if (node == node.parent.left) {
+                node.parent.left = replacement;
+            } else if (node == node.parent.right) {
+                node.parent.right = replacement;
+            }
+            // 删除结点之后的处理
+            afterRemove(node, replacement);
+            // 删除node是叶子节点, 且是根节点
+        } else if (node.parent == null) {
+            root = null;
+            // 删除结点之后的处理
+            afterRemove(node, null);
+        } else { // node是叶子结点, 且不是根节点
+            if (node == node.parent.left) {
+                node.parent.left = null;
+            } else {  // node == node.parent.right
+                node.parent.right = null;
+            }
+            // 删除结点之后的处理
+            afterRemove(node, null);
+        }
+        return oldValue;
+    }
+
+    /**
+     * 根据传入的节点, 返回该节点的前驱节点 (中序遍历)
+     *
+     * @param node
+     * @return
+     */
+    private Node<K, V> predecessor(Node<K, V> node) {
+        if (node == null) return node;
+
+        // (中序遍历)前驱节点在左子树当中(node.left.right.right.right...)
+        Node<K, V> p = node.left;
+        // 左子树存在
+        if (p != null) {
+            while (p.right != null) {
+                p = p.right;
+            }
+            return p;
+        }
+
+        // 程序走到这里说明左子树不存在; 从父节点、祖父节点中寻找前驱节点
+        /*
+         * node的父节点不为空 && node是其父节点的左子树时. 就一直往上寻找它的父节点
+         *  因为node==node.parent.right, 说明你在你父节点的右边, 那么node.parent就是其node的前驱节点
+         */
+        while (node.parent != null && node == node.parent.left) {
+            node = node.parent;
+        }
+
+        // 能来到这里表示: 两种情况如下
+        // node.parent == null 表示没有父节点(根节点),返回空 ==> return node.parent;
+        // node==node.parent.right 说明你在你父节点的右边, 那么node.parent就是其node的前驱节点 ==> return node.parent;
+        return node.parent;
+    }
+
+    /**
+     * 根据传入的节点, 返回该节点的后驱节点 (中序遍历)
+     *
+     * @param node
+     * @return
+     */
+    private Node<K, V> successor(Node<K, V> node) {
+        if (node == null) return node;
+
+        Node<K, V> p = node.right;
+        if (p != null) {
+            while (p.left != null) {
+                p = p.left;
+            }
+            return p;
+        }
+
+        // node.right为空
+        while (node.parent != null && node == node.parent.right) {
+            node = node.parent;
+        }
+
+        return node.parent;
+    }
+
+
+    /**
+     * 传入key找到对应红黑树对应的结点, 然后取出k红黑树节点的value
+     *
+     * @param key
+     * @return
+     */
+    private Node<K, V> node(K key) {
+        Node<K, V> node = root;
+        while (node != null) {
+            int cmp = compare(key, node.key);
+            if (cmp == 0) return node;
+            if (cmp > 0) {  // 说明key对应的结点, 比node的key大, 所以去它的右子树找
+                node = node.right;
+            } else {
+                node = node.left;
+            }
+        }
+        return null; // 没有找到key对应的结点
     }
 
     /**
