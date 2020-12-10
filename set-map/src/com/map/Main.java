@@ -4,6 +4,8 @@ import com.map.file.FileInfo;
 import com.map.file.Files;
 import com.map.map.Map;
 import com.map.map.TreeMap;
+import com.map.set.Set;
+import com.map.set.TreeSet;
 import org.junit.Test;
 
 /**
@@ -13,6 +15,25 @@ import org.junit.Test;
  * @date 2020/12/9 15:43
  */
 public class Main {
+
+    // 测试TreeMap来实现TreeSet
+    @Test
+    public void test3() {
+        Set<Integer> treeSet = new TreeSet<>();
+        treeSet.add(1);
+        treeSet.add(7);
+        treeSet.add(3);
+        treeSet.add(7);
+        treeSet.add(0);
+
+        treeSet.traversal(new Set.Visitor<Integer>() {
+            @Override
+            public boolean visit(Integer element) {
+                System.out.println(element);
+                return false;
+            }
+        });
+    }
 
     @Test
     public void test1() {
