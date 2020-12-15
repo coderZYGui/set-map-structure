@@ -1,5 +1,8 @@
 package com.hashtable.map;
 
+import com.hashtable.printer.BinaryTreeInfo;
+import com.hashtable.printer.BinaryTrees;
+
 import java.util.LinkedList;
 import java.util.Objects;
 import java.util.Queue;
@@ -164,6 +167,36 @@ public class HashMap<K, V> implements Map<K, V> {
                     queue.offer(node.right);
                 }
             }
+        }
+    }
+
+    public void print() {
+        if (size == 0) return;
+        for (int i = 0; i < table.length; i++) {
+            final Node<K, V> root = table[i];
+            System.out.println("[index = " + i + "]");
+            BinaryTrees.println(new BinaryTreeInfo() {
+                @Override
+                public Object root() {
+                    return root;
+                }
+
+                @Override
+                public Object left(Object node) {
+                    return ((Node<K, V>) node).left;
+                }
+
+                @Override
+                public Object right(Object node) {
+                    return ((Node<K, V>) node).right;
+                }
+
+                @Override
+                public Object string(Object node) {
+                    return node;
+                }
+            });
+            System.out.println("----------------------------------");
         }
     }
 
@@ -655,6 +688,11 @@ public class HashMap<K, V> implements Map<K, V> {
                 return parent.left;
             }
             return null;
+        }
+
+        @Override
+        public String toString() {
+            return "Node_" + key + "_" + value;
         }
     }
 }

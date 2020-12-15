@@ -1,4 +1,4 @@
-package com.hashtable;
+package com.hashtable.model;
 
 /**
  * Description: 怎么计算及定义对象的哈希值

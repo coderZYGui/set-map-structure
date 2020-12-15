@@ -1,6 +1,8 @@
 package com.hashtable;
 
 import com.hashtable.map.HashMap;
+import com.hashtable.model.Key;
+import com.hashtable.model.Person;
 import org.junit.Test;
 
 /**
@@ -12,6 +14,17 @@ import org.junit.Test;
 public class Main {
 
     @Test
+    public void test4() {
+        HashMap<Object, Integer> map = new HashMap<>();
+        for (int i = 1; i <= 19; i++) {
+            map.put(new Key(i), i);
+        }
+        map.print();
+        // System.out.println(map.size()); // 19
+        System.out.println(map.get(new Key(1))); // null
+    }
+
+    @Test
     public void test3() {
         Person p1 = new Person(10, 1.4f, "jack");
         Person p2 = new Person(10, 1.4f, "jack");
@@ -21,7 +34,7 @@ public class Main {
         map.put("jack", 3);
         map.put("rose", 4);
         map.put("jack", 5);
-        map.put(null , 6);
+        map.put(null, 6);
         //System.out.println(map.size()); //  4
 
 //        System.out.println(map.get("jack"));
