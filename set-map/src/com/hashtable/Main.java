@@ -17,11 +17,38 @@ public class Main {
         Person p2 = new Person(10, 1.4f, "jack");
         HashMap<Object, Integer> map = new HashMap<>();
         map.put(p1, 1);
-        map.put(p1, 2);
-        map.put("guizy", 3);
-        map.put("tom", 4);
-        map.put("guizy", 5);
-        System.out.println(map.size());
+        map.put(p2, 2);
+        map.put("jack", 3);
+        map.put("rose", 4);
+        map.put("jack", 5);
+        map.put(null , 6);
+        //System.out.println(map.size()); //  4
+
+//        System.out.println(map.get("jack"));
+//        System.out.println(map.get("rose"));
+//        System.out.println(map.get(null));
+//        System.out.println(map.get(p1));
+
+        // 测试remove, get
+//        System.out.println(map.size());
+//        System.out.println(map.remove("jack"));
+//        System.out.println(map.get("jack"));
+//        System.out.println(map.size());
+
+        // 测试遍历
+//        map.traversal(new Map.Visitor<Object, Integer>() {
+//            @Override
+//            public boolean visit(Object key, Integer value) {
+//                System.out.println(key + "_" + value);
+//                return false;
+//            }
+//        });
+
+        // 测试containsKey, containsValue
+        System.out.println(map.containsKey(p1));
+        System.out.println(map.containsKey(null));
+        System.out.println(map.containsValue(6));
+        System.out.println(map.containsValue(1));
     }
 
     @Test

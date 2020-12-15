@@ -1,6 +1,8 @@
 package com.hashtable.map;
 
+import java.util.LinkedList;
 import java.util.Objects;
+import java.util.Queue;
 
 /**
  * Description: 使用哈希表来实现一个HashMap
@@ -105,31 +107,154 @@ public class HashMap<K, V> implements Map<K, V> {
 
     @Override
     public V get(K key) {
-        return null;
+        Node<K, V> node = node(key);
+        return node != null ? node.value : null;
     }
 
     @Override
     public V remove(K key) {
-        return null;
+        return remove(node(key));
     }
 
     @Override
     public boolean containsKey(K key) {
-        return false;
+        return node(key) != null;
     }
 
     @Override
     public boolean containsValue(V value) {
+        if (size == 0) return false;
+        Queue<Node<K, V>> queue = new LinkedList<>();
+        // 遍历哈希表中的所有的桶, 然后根据每个桶中的红黑树根节点, 层序遍历, 看看是否存在value
+        for (int i = 0; i < table.length; i++) {
+            // 说明哈希表中的table[i]的位置没有红黑树根节点, 也就是为空, 此时不用遍历比较.跳过
+            if (table[i] == null) continue;
+            queue.offer(table[i]);
+            while (!queue.isEmpty()) {
+                Node<K, V> node = queue.poll();
+                if (Objects.equals(value, node.value)) return true;
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+        }
         return false;
     }
 
     @Override
     public void traversal(Visitor<K, V> visitor) {
+        if (size == 0 || visitor == null) return;
+        Queue<Node<K, V>> queue = new LinkedList<>();
+        // 遍历哈希表中的所有的桶, 然后根据每个桶中的红黑树根节点, 层序遍历, 看看是否存在value
+        for (int i = 0; i < table.length; i++) {
+            // 说明哈希表中的table[i]的位置没有红黑树根节点, 也就是为空, 此时不用遍历比较.跳过
+            if (table[i] == null) continue;
+            queue.offer(table[i]);
+            while (!queue.isEmpty()) {
+                Node<K, V> node = queue.poll();
+                // 返回为true, 就停止遍历
+                if (visitor.visit(node.key, node.value)) return;
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+            }
+        }
+    }
 
+    private V remove(Node<K, V> node) {
+        if (node == null) return null;
+        // node 不为空, 必然要删除结点, 先size--;
+        size--;
+
+        V oldValue = node.value;
+
+        // 删除node是度为2的结点
+        if (node.hasTwoChildren()) {
+            /*//1 找到后继(也可以找到前驱)
+            Node<E> successor = successor(node);
+            //2 用后继结点的值覆盖度为2结点的值
+            node.element = successor.element;
+            //3 删除后继节点
+            node = successor;*/
+
+            //1、找到前驱
+            Node<K, V> predecessor = predecessor(node);
+            //2、用前驱节点的值覆盖度为2节点的值
+            node.key = predecessor.key;
+            node.value = predecessor.value;
+            //3、删除前驱节点
+            node = predecessor;
+        }
+        // 删除node,即删除后继节点 (node节点必然是度为1或0)
+        // 因为node只有一个子节点/0个子节点, 如果其left!=null, 则用node.left来替代, node.left==null, 用node.right来替代,
+        // 若node为叶子节点, 说明, node.left==null, node.right也为null, 则replacement==null;
+        Node<K, V> replacement = node.left != null ? node.left : node.right;
+        // 获取要删除节点的索引(就是红黑树所在桶的索引)
+        int index = index(node);
+        // 删除node是度为1的结点
+        if (replacement != null) {
+            // 更改parent
+            replacement.parent = node.parent;
+            // 更改parent的left、right的指向
+            if (node.parent == null) {  // node是度为1且是根节点
+                table[index] = replacement;
+            } else if (node == node.parent.left) {
+                node.parent.left = replacement;
+            } else if (node == node.parent.right) {
+                node.parent.right = replacement;
+            }
+            // 删除结点之后的处理
+            afterRemove(node, replacement);
+            // 删除node是叶子节点, 且是根节点
+        } else if (node.parent == null) {
+            table[index] = null;
+            // 删除结点之后的处理
+            afterRemove(node, null);
+        } else { // node是叶子结点, 且不是根节点
+            if (node == node.parent.left) {
+                node.parent.left = null;
+            } else {  // node == node.parent.right
+                node.parent.right = null;
+            }
+            // 删除结点之后的处理
+            afterRemove(node, null);
+        }
+        return oldValue;
     }
 
     /**
-     * 计算key的索引(在桶数组中的位置)
+     * 根据一个key, 找到对应的节点
+     *
+     * @param key
+     * @return
+     */
+    private Node<K, V> node(K key) {
+        // 确定key在哪个桶里面(索引)
+        int index = index(key);
+        // 根据key所在桶的索引, 找到该桶的红黑树根节点
+        Node<K, V> node = table[index];
+        // 再根据红黑树的根节点, 去找到key所对应的节点, 拿到value返回
+        int h1 = key == null ? 0 : key.hashCode();
+        while (node != null) {
+            int cmp = compare(key, node.key, h1, node.hash);
+            if (cmp == 0) return node;
+            if (cmp > 0) {
+                node = node.right;
+            } else if (cmp < 0) {
+                node = node.left;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 计算key的索引(在哈希表(数组)的哪个索引位置)
      *
      * @param key
      * @return
@@ -168,8 +293,10 @@ public class HashMap<K, V> implements Map<K, V> {
         // 表示哈希值不同
         if (result != 0) return result;
         // 哈希值相同,不代表它们就是同一个对象,不能直接覆盖. 要判断它们的equals方法
-        if (Objects.equals(k1, k2)) return 0; // equals相同, 返回0, 进行覆盖
+        // equals相同, 返回0(说明相同是同一个对象), 进行覆盖
+        if (Objects.equals(k1, k2)) return 0;
         // 哈希值相同,equals不同
+        // 比较key的类名(因为红黑树中的节点类型是各种类型)
         if (k1 != null && k2 != null) {
             String k1Class = k1.getClass().getName();
             String k2Class = k2.getClass().getName();
@@ -306,7 +433,7 @@ public class HashMap<K, V> implements Map<K, V> {
                 // 兄弟节点没有一个红色子节点(不能借一个节点给你), 父节点要向下跟node的兄弟节点合并
                 /*
                     首先这里要判断父节点parent的颜色(如果为parent为红色,则根据B树红色节点向其黑色父节点合并原则,parent向下合并,肯定不会
-                    发生下溢; 如果parent为黑色,则说明parent向下合并后,必然也会发生下溢,这里我们当作移除一个叶子结点处理,复用afterRemove
+                    发生下溢; 如果parent为黑色,则说明parent向下合并后,必然也会发生下溢,这里我们当作移除一个叶子节点处理,复用afterRemove
                  */
                 boolean parentBlack = isBlack(parent);
                 // 下面两行染色的代码,是说明parent为红色的情况
@@ -390,6 +517,39 @@ public class HashMap<K, V> implements Map<K, V> {
         grand.parent = parent;
     }
 
+    /**
+     * 根据传入的节点, 返回该节点的前驱节点 (中序遍历)
+     *
+     * @param node
+     * @return
+     */
+    private Node<K, V> predecessor(Node<K, V> node) {
+        if (node == null) return node;
+
+        // (中序遍历)前驱节点在左子树当中(node.left.right.right.right...)
+        Node<K, V> p = node.left;
+        // 左子树存在
+        if (p != null) {
+            while (p.right != null) {
+                p = p.right;
+            }
+            return p;
+        }
+
+        // 程序走到这里说明左子树不存在; 从父节点、祖父节点中寻找前驱节点
+        /*
+         * node的父节点不为空 && node是其父节点的左子树时. 就一直往上寻找它的父节点
+         *  因为node==node.parent.right, 说明你在你父节点的右边, 那么node.parent就是其node的前驱节点
+         */
+        while (node.parent != null && node == node.parent.left) {
+            node = node.parent;
+        }
+
+        // 能来到这里表示: 两种情况如下
+        // node.parent == null 表示没有父节点(根节点),返回空 ==> return node.parent;
+        // node==node.parent.right 说明你在你父节点的右边, 那么node.parent就是其node的前驱节点 ==> return node.parent;
+        return node.parent;
+    }
 
     /**
      * 将node染成color色
