@@ -12,6 +12,18 @@ import org.junit.Test;
  * @date 2020/12/11 23:17
  */
 public class Main {
+    @Test
+    public void test5() {
+        HashMap<Object, Integer> map = new HashMap<>();
+        for (int i = 1; i <= 19; i++) {
+            map.put(new Key(i), i);
+        }
+        map.put(new Key(4), 100);
+        Assert.test(map.size() == 19);
+        Assert.test(map.get(new Key(4)) == 100);
+        Assert.test(map.get(new Key(18)) == 18);
+        // map.print();
+    }
 
     @Test
     public void test4() {
