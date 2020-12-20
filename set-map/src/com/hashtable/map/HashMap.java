@@ -268,23 +268,50 @@ public class HashMap<K, V> implements Map<K, V> {
      * @return
      */
     private Node<K, V> node(K key) {
-        // 确定key在哪个桶里面(索引)
-        int index = index(key);
-        // 根据key所在桶的索引, 找到该桶的红黑树根节点
-        Node<K, V> node = table[index];
-        // 再根据红黑树的根节点, 去找到key所对应的节点, 拿到value返回
-        int h1 = key == null ? 0 : key.hashCode();
+        Node<K, V> root = table[index(key)];
+        return root == null ? null : node(root, key);
+    }
+
+    private Node<K, V> node(Node<K, V> node, K k1) {
+        int h1 = k1 == null ? 0 : k1.hashCode();
+        // 存储查找结果
+        Node<K, V> result = null;
+        // 递归去左右子树查找
         while (node != null) {
-            int cmp = compare(key, node.key, h1, node.hash);
-            if (cmp == 0) return node;
-            if (cmp > 0) {
+            K k2 = node.key;
+            int h2 = node.hash;
+            // 先比较哈希值
+            if (h1 > h2) {
                 node = node.right;
-            } else if (cmp < 0) {
+            } else if (h1 < h2) {
                 node = node.left;
+                // 哈希值相同, 看看k1,k2是否相同,如果相同,则表示找到
+            } else if (Objects.equals(k1, k2)) {
+                return node;
+                // 哈希值相同, equals不同, 看看是否具备可比较性
+            } else if (k1 != null && k2 != null && k1.getClass() == k2.getClass() && k1 instanceof Comparable) {
+                // 具备可比较性
+                int cmp = ((Comparable) k1).compareTo(k2);
+                if (cmp > 0) {
+                    node = node.right;
+                } else if (cmp < 0) {
+                    node = node.left;
+                } else {
+                    return node;
+                }
+                // 哈希值相同,equals不同, 不具备可比较性
+            } else if (node.right != null && (result = node(node.right, k1)) != null) {
+                return result;
+            } else if (node.left != null && (result = node(node.left, k1)) != null) {
+                return result;
+            } else {
+                // 没找到
+                return null;
             }
         }
         return null;
     }
+
 
     /**
      * 计算key的索引(在哈希表(数组)的哪个索引位置)
@@ -330,12 +357,14 @@ public class HashMap<K, V> implements Map<K, V> {
         if (Objects.equals(k1, k2)) return 0;
         // 哈希值相同,equals不同
         // 比较key的类名(因为红黑树中的节点类型是各种类型)
-        if (k1 != null && k2 != null) {
-            String k1Class = k1.getClass().getName();
-            String k2Class = k2.getClass().getName();
-            result = k1Class.compareTo(k2Class);
-            // 不同类型
-            if (result != 0) return result;
+        if (k1 != null && k2 != null
+                && k1.getClass() == k2.getClass()
+                && k1 instanceof Comparable) {
+//            String k1Class = k1.getClass().getName();
+//            String k2Class = k2.getClass().getName();
+//            result = k1Class.compareTo(k2Class);
+//            // 不同类型
+//            if (result != 0) return result;
             // 同一种类型, 并且k1,k2的类型都实现了Comparable接口(具备可比较性)
             if (k1 instanceof Comparable) {
                 // 走k1内部的比较逻辑

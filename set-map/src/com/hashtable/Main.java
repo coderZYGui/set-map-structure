@@ -19,9 +19,9 @@ public class Main {
         for (int i = 1; i <= 19; i++) {
             map.put(new Key(i), i);
         }
+        System.out.println(map.get(new Key(1))); // null
         map.print();
         // System.out.println(map.size()); // 19
-        System.out.println(map.get(new Key(1))); // null
     }
 
     @Test
