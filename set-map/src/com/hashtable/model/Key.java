@@ -7,7 +7,7 @@ package com.hashtable.model;
  * @date 2020/12/16 01:04
  */
 public class Key {
-    private int value;
+    protected int value;
 
     public Key(int value) {
         this.value = value;
@@ -15,7 +15,7 @@ public class Key {
 
     @Override
     public int hashCode() {
-        return value / 19;
+        return value / 10;
     }
 
     @Override
