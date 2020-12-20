@@ -77,7 +77,10 @@ public class HashMap<K, V> implements Map<K, V> {
         int cmp = 0;
         K k1 = key;
         int h1 = k1 == null ? 0 : k1.hashCode();
+        // 搜索结果
         Node<K, V> result = null;
+        // 是否搜索过, 为了防止重复搜索; 提高代码性能
+        boolean searched = false;
         do {
             parent = node; // 记录其每一次比较的父节点
             K k2 = node.key;
@@ -91,7 +94,10 @@ public class HashMap<K, V> implements Map<K, V> {
                 cmp = 0;
             } else if (k1 != null && k2 != null && k1.getClass() == k2.getClass() && k1 instanceof Comparable) {
                 cmp = ((Comparable) k1).compareTo(k2);
-            } else { // 先进行扫描, 然后再根据内存地址大小决定,插入到左/右
+            } else if (searched) {
+                // 已经搜索过了
+                cmp = System.identityHashCode(k1) - System.identityHashCode(k2);
+            } else { // 先进行扫描, 然后再根据内存地址大小决定,插入到左/右; searched == false 还没有搜索过
                 if ((node.left != null && (result = node(node.left, k1)) != null)
                         || (node.right != null && (result = node(node.right, k1)) != null)) {
                     // 已经存在这个key
@@ -99,6 +105,7 @@ public class HashMap<K, V> implements Map<K, V> {
                     cmp = 0;
                 } else {
                     // 不存在这个key
+                    searched = true;
                     cmp = System.identityHashCode(k1) - System.identityHashCode(k2);
                 }
             }
