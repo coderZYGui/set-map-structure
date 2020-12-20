@@ -92,8 +92,14 @@ public class HashMap<K, V> implements Map<K, V> {
                 cmp = -1;
             } else if (Objects.equals(k1, k2)) {
                 cmp = 0;
-            } else if (k1 != null && k2 != null && k1.getClass() == k2.getClass() && k1 instanceof Comparable) {
-                cmp = ((Comparable) k1).compareTo(k2);
+            } else if (k1 != null && k2 != null
+                    && k1.getClass() == k2.getClass()
+                    && k1 instanceof Comparable
+                    && (cmp = ((Comparable) k1).compareTo(k2)) != 0) {
+                // 什么都不做. 直接就会到下下面cmp的比较逻辑
+                // 这里就不比较了, 因为我们之前说过哈希表的元素可以不具备可比较性.
+                // 确定两个key是否相同,只能比equals是否相同; 通过compareTo比较相等,也不代表他们就是相等的
+                // cmp = ((Comparable) k1).compareTo(k2);
             } else if (searched) {
                 // 已经搜索过了
                 cmp = System.identityHashCode(k1) - System.identityHashCode(k2);
@@ -307,6 +313,7 @@ public class HashMap<K, V> implements Map<K, V> {
         int h1 = k1 == null ? 0 : k1.hashCode();
         // 存储查找结果
         Node<K, V> result = null;
+        int cmp = 0;
         // 递归去左右子树查找
         while (node != null) {
             K k2 = node.key;
@@ -320,25 +327,32 @@ public class HashMap<K, V> implements Map<K, V> {
             } else if (Objects.equals(k1, k2)) {
                 return node;
                 // 哈希值相同, equals不同, 看看是否具备可比较性
-            } else if (k1 != null && k2 != null && k1.getClass() == k2.getClass() && k1 instanceof Comparable) {
+            } else if (k1 != null && k2 != null
+                    && k1.getClass() == k2.getClass()
+                    && k1 instanceof Comparable
+                    && (cmp = ((Comparable) k1).compareTo(k2)) != 0) {
                 // 具备可比较性
-                int cmp = ((Comparable) k1).compareTo(k2);
+                //cmp = ((Comparable) k1).compareTo(k2); // 和put相同,compareTo相同不应该确定key就相同,应该继续向下搜索节点的key
                 if (cmp > 0) {
                     node = node.right;
                 } else if (cmp < 0) {
                     node = node.left;
-                } else {
-                    return node;
                 }
+//                else {
+//                    return node;
+//                }
                 // 哈希值相同,equals不同, 不具备可比较性
             } else if (node.right != null && (result = node(node.right, k1)) != null) {
                 return result;
-            } else if (node.left != null && (result = node(node.left, k1)) != null) {
-                return result;
             } else {
-                // 没找到
-                return null;
+                node = node.left; // 优化下面的6行代码, 减少一次递归调用
             }
+//            } else if (node.left != null && (result = node(node.left, k1)) != null) {
+//                return result;
+//            } else {
+//                // 没找到
+//                return null;
+//            }
         }
         return null;
     }
