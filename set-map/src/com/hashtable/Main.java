@@ -1,5 +1,7 @@
 package com.hashtable;
 
+import com.hashtable.file.FileInfo;
+import com.hashtable.file.Files;
 import com.hashtable.map.HashMap;
 import com.hashtable.map.Map;
 import com.hashtable.model.Key;
@@ -16,48 +18,56 @@ import org.junit.Test;
  */
 public class Main {
 
+    public void testMap(Map<String, Integer> map, String[] words) {
+        Times.test(map.getClass().getName(), new Times.Task() {
+            @Override
+            public void execute() {
+                for (String word : words) {
+                    Integer count = map.get(word);
+                    count = count == null ? 0 : count;
+                    map.put(word, count + 1);
+                }
+                System.out.println(map.size()); // 17188
+
+                int count = 0;
+                for (String word : words) {
+                    Integer i = map.get(word);
+                    count += i == null ? 0 : i;
+                    map.remove(word);
+                }
+                Assert.test(count == words.length);
+                Assert.test(map.size() == 0);
+            }
+        });
+    }
+
     @Test
-    public void test100() {
+    public void test11() {
+        String filepath = "/Users/qw/Desktop/恋上数据结构/src/java/util";
+        FileInfo fileInfo = Files.read(filepath, null);
+        String[] words = fileInfo.words();
+
+        System.out.println("总行数：" + fileInfo.getLines());
+        System.out.println("单词总数：" + words.length);
+        System.out.println("-------------------------------------");
+
+        testMap(new HashMap<>(), words);
+    }
+
+    @Test
+    public void test10() {
         HashMap<Object, Integer> map = new HashMap<>();
         for (int i = 1; i <= 20; i++) {
-            map.put(new Key(i), i);
+            map.put(new SubKey1(i), i);
         }
-        for (int i = 5; i <= 7; i++) {
-            map.put(new Key(i), i + 5);
-        }
+        map.put(new SubKey2(1), 5);
+        Assert.test(map.get(new SubKey1(1)) == 5);
+        Assert.test(map.get(new SubKey2(1)) == 5);
         Assert.test(map.size() == 20);
-        Assert.test(map.get(new Key(4)) == 4);
-        Assert.test(map.get(new Key(5)) == 10);
-        Assert.test(map.get(new Key(6)) == 11);
-        Assert.test(map.get(new Key(7)) == 12);
-        Assert.test(map.get(new Key(8)) == 8);
     }
 
     @Test
-    public void test101() {
-        HashMap<Object, Integer> map = new HashMap<>();
-        map.put(null, 1); // 1
-        map.put(new Object(), 2); // 2
-        map.put("jack", 3); // 3
-        map.put(10, 4); // 4
-        map.put(new Object(), 5); // 5
-        map.put("jack", 6);
-        map.put(10, 7);
-        map.put(null, 8);
-        map.put(10, null);
-        Assert.test(map.size() == 5);
-        Assert.test(map.get(null) == 8);
-        Assert.test(map.get("jack") == 6);
-        Assert.test(map.get(10) == null);
-        Assert.test(map.get(new Object()) == null);
-        Assert.test(map.containsKey(10));
-        Assert.test(map.containsKey(null));
-        Assert.test(map.containsValue(null));
-        Assert.test(map.containsValue(1) == false);
-    }
-
-    @Test
-    public void test102() {
+    public void test9() {
         HashMap<Object, Integer> map = new HashMap<>();
         map.put("jack", 1);
         map.put("rose", 2);
@@ -93,15 +103,43 @@ public class Main {
     }
 
     @Test
-    public void test103() {
+    public void test8() {
+        HashMap<Object, Integer> map = new HashMap<>();
+        map.put(null, 1); // 1
+        map.put(new Object(), 2); // 2
+        map.put("jack", 3); // 3
+        map.put(10, 4); // 4
+        map.put(new Object(), 5); // 5
+        map.put("jack", 6);
+        map.put(10, 7);
+        map.put(null, 8);
+        map.put(10, null);
+        Assert.test(map.size() == 5);
+        Assert.test(map.get(null) == 8);
+        Assert.test(map.get("jack") == 6);
+        Assert.test(map.get(10) == null);
+        Assert.test(map.get(new Object()) == null);
+        Assert.test(map.containsKey(10));
+        Assert.test(map.containsKey(null));
+        Assert.test(map.containsValue(null));
+        Assert.test(map.containsValue(1) == false);
+    }
+
+    @Test
+    public void test7() {
         HashMap<Object, Integer> map = new HashMap<>();
         for (int i = 1; i <= 20; i++) {
-            map.put(new SubKey1(i), i);
+            map.put(new Key(i), i);
         }
-        map.put(new SubKey2(1), 5);
-        Assert.test(map.get(new SubKey1(1)) == 5);
-        Assert.test(map.get(new SubKey2(1)) == 5);
+        for (int i = 5; i <= 7; i++) {
+            map.put(new Key(i), i + 5);
+        }
         Assert.test(map.size() == 20);
+        Assert.test(map.get(new Key(4)) == 4);
+        Assert.test(map.get(new Key(5)) == 10);
+        Assert.test(map.get(new Key(6)) == 11);
+        Assert.test(map.get(new Key(7)) == 12);
+        Assert.test(map.get(new Key(8)) == 8);
     }
     // -----------上面是MJ提供的测试用例------------
 

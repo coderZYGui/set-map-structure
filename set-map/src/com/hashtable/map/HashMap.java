@@ -126,6 +126,8 @@ public class HashMap<K, V> implements Map<K, V> {
                 node.key = key;
                 V oldValue = node.value;
                 node.value = value;
+                // 这里写不写都行,hash本来就等于h1; 因为key是相同(equals相同)的时候,才会来到这里,key相同,hash值也肯定相同
+                node.hash = h1;
                 return oldValue; // 返回之前node的value
             }
         } while (node != null);
@@ -258,6 +260,7 @@ public class HashMap<K, V> implements Map<K, V> {
             //2、用前驱节点的值覆盖度为2节点的值
             node.key = predecessor.key;
             node.value = predecessor.value;
+            node.hash = predecessor.hash;
             //3、删除前驱节点
             node = predecessor;
         }
