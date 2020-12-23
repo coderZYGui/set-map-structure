@@ -166,7 +166,7 @@ public class Main {
         Assert.test(map.size() == 19);
         Assert.test(map.get(new Key(4)) == 100);
         Assert.test(map.get(new Key(18)) == 18);
-        // map.print();
+//         map.print();
     }
 
     @Test

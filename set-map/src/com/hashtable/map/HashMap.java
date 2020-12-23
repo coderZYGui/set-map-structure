@@ -13,11 +13,13 @@ import java.util.Queue;
  * @author guizy
  * @date 2020/12/14 22:00
  */
+@SuppressWarnings("all")
 public class HashMap<K, V> implements Map<K, V> {
 
     private static final boolean RED = false;
     private static final boolean BLACK = true;
     private static final int DEFAULT_CAPACITY = 1 << 4;
+    private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     private int size;   // HashMap的容量(哈希表容量), 用来记录存放多少个entry(键值对)
 
@@ -58,6 +60,8 @@ public class HashMap<K, V> implements Map<K, V> {
      */
     @Override
     public V put(K key, V value) {
+        resize();
+
         // 哈希表中的索引
         int index = index(key);
         // 取出index位置(数组中)的红黑树根节点(因为哈希表中存储的就是红黑树的根节点(键值对))
@@ -145,7 +149,6 @@ public class HashMap<K, V> implements Map<K, V> {
         afterPut(newNode);
         // 这里的key是第一次加进去的, 之前没有值, 所以返回null
         return null;
-
     }
 
     @Override
@@ -238,6 +241,91 @@ public class HashMap<K, V> implements Map<K, V> {
             });
             System.out.println("----------------------------------");
         }
+    }
+
+    /**
+     * 扩容
+     */
+    private void resize() {
+        // 装填因子 <= 0.75, 不扩容
+        if (size / table.length <= DEFAULT_LOAD_FACTOR) return;
+        Node<K, V>[] oldTable = table;
+        table = new Node[oldTable.length << 1];
+        Queue<Node<K, V>> queue = new LinkedList<>();
+        for (int i = 0; i < oldTable.length; i++) {
+            if (oldTable[i] == null) continue;
+
+            queue.offer(oldTable[i]);
+            while (!queue.isEmpty()) {
+                Node<K, V> node = queue.poll();
+                if (node.left != null) {
+                    queue.offer(node.left);
+                }
+                if (node.right != null) {
+                    queue.offer(node.right);
+                }
+                // 挪动代码,放到后面
+                moveNode(node);
+            }
+        }
+    }
+
+    private void moveNode(Node<K, V> newNode) {
+        // 首先重置挪动过来node的left,right,parent
+        newNode.parent = null;
+        newNode.left = null;
+        newNode.right = null;
+        newNode.color = RED;
+
+        // 哈希表中的索引
+        int index = index(newNode);
+        // 取出index位置(数组中)的红黑树根节点(因为哈希表中存储的就是红黑树的根节点(键值对))
+        Node<K, V> root = table[index];
+        if (root == null) {
+            root = newNode;
+            table[index] = root;
+            afterPut(root);
+            return;
+        }
+        Node<K, V> parent = root; // 这个是第一次比较的父节点
+        Node<K, V> node = root;
+        int cmp = 0;
+        K k1 = newNode.key;
+        int h1 = newNode.hash;
+        do {
+            parent = node; // 记录其每一次比较的父节点
+            K k2 = node.key;
+            int h2 = node.hash;
+            // 先比较哈希值, 因为是挪动, 所以不用equals比较key, 肯定没有相同的key
+            if (h1 > h2) {
+                cmp = 1;
+            } else if (h1 < h2) {
+                cmp = -1;
+            } else if (k1 != null && k2 != null
+                    && k1.getClass() == k2.getClass()
+                    && k1 instanceof Comparable
+                    && (cmp = ((Comparable) k1).compareTo(k2)) != 0) {
+            } else {
+                cmp = System.identityHashCode(k1) - System.identityHashCode(k2);
+            }
+
+            if (cmp > 0) {
+                // 插入的元素大于根节点的元素,插入到根节点的右边
+                node = node.right;
+            } else if (cmp < 0) {
+                // 插入的元素小于根节点的元素,插入到根节点的左边
+                node = node.left;
+            }
+        } while (node != null);
+        // 看看插入到父节点的哪个位置
+        newNode.parent = parent;
+        if (cmp > 0) {
+            parent.right = newNode;
+        } else {
+            parent.left = newNode;
+        }
+        // 添加节点之后的逻辑
+        afterPut(newNode);
     }
 
     private V remove(Node<K, V> node) {
@@ -382,6 +470,7 @@ public class HashMap<K, V> implements Map<K, V> {
 
     /**
      * 扰动计算哈希值
+     *
      * @param key
      * @return
      */
