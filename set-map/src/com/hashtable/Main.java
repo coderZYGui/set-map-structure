@@ -43,7 +43,7 @@ public class Main {
 
     @Test
     public void test11() {
-        String filepath = "/Users/qw/Desktop/恋上数据结构/src/java/util";
+        String filepath = "/Users/qw/Desktop/恋上数据结构/first/src/java/util";
         FileInfo fileInfo = Files.read(filepath, null);
         String[] words = fileInfo.words();
 

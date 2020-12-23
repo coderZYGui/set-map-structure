@@ -76,7 +76,8 @@ public class HashMap<K, V> implements Map<K, V> {
         Node<K, V> node = root;
         int cmp = 0;
         K k1 = key;
-        int h1 = k1 == null ? 0 : k1.hashCode();
+        //int h1 = k1 == null ? 0 : k1.hashCode();
+        int h1 = hash(k1);
         // 搜索结果
         Node<K, V> result = null;
         // 是否搜索过, 为了防止重复搜索; 提高代码性能
@@ -313,7 +314,8 @@ public class HashMap<K, V> implements Map<K, V> {
     }
 
     private Node<K, V> node(Node<K, V> node, K k1) {
-        int h1 = k1 == null ? 0 : k1.hashCode();
+        //int h1 = k1 == null ? 0 : k1.hashCode();
+        int h1 = hash(k1);
         // 存储查找结果
         Node<K, V> result = null;
         int cmp = 0;
@@ -368,12 +370,25 @@ public class HashMap<K, V> implements Map<K, V> {
      * @return
      */
     private int index(K key) {
-        if (key == null) return 0; // 如果key为空, 插入到哈希表的0位置
+//        if (key == null) return 0; // 如果key为空, 插入到哈希表的0位置
+//        int hash = key.hashCode();
+//        // 同Double,Long的hashCode类似实现,因为key.hashCode()是我们自己实现的,在JDK底层又作了一次混合运算
+//        // 拿到我们自己实现的hash值, 将hash值和hash值无符号右移16位再做一次运算
+//        hash = hash ^ (hash >>> 16);
+//        return hash & (table.length - 1);
+
+        return hash(key) & (table.length - 1);
+    }
+
+    /**
+     * 扰动计算哈希值
+     * @param key
+     * @return
+     */
+    private int hash(K key) {
+        if (key == null) return 0;
         int hash = key.hashCode();
-        // 同Double,Long的hashCode类似实现,因为key.hashCode()是我们自己实现的,在JDK底层又作了一次混合运算
-        // 拿到我们自己实现的hash值, 将hash值和hash值无符号右移16位再做一次运算
-        hash = hash ^ (hash >>> 16);
-        return hash & (table.length - 1);
+        return hash ^ (hash >>> 16);
     }
 
     /**
@@ -383,7 +398,7 @@ public class HashMap<K, V> implements Map<K, V> {
      * @return
      */
     private int index(Node<K, V> node) {
-        return (node.hash ^ (node.hash >>> 16)) & (table.length - 1);
+        return node.hash & (table.length - 1);
     }
 
 //    /**
@@ -735,7 +750,8 @@ public class HashMap<K, V> implements Map<K, V> {
 
         public Node(K key, V value, Node<K, V> parent) {
             this.key = key;
-            this.hash = key == null ? 0 : key.hashCode();
+            int hash = key == null ? 0 : key.hashCode();
+            this.hash = hash ^ (hash >>> 16);
             this.value = value;
             this.parent = parent;
         }
