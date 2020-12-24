@@ -43,7 +43,8 @@ public class Main {
 
     @Test
     public void test11() {
-        String filepath = "/Users/qw/Desktop/恋上数据结构/first/src/java/util";
+        // String filepath = "/Users/qw/Desktop/恋上数据结构/src/java/util";
+        String filepath = "C:\\Users\\guizy1\\Desktop\\src";
         FileInfo fileInfo = Files.read(filepath, null);
         String[] words = fileInfo.words();
 
@@ -166,7 +167,7 @@ public class Main {
         Assert.test(map.size() == 19);
         Assert.test(map.get(new Key(4)) == 100);
         Assert.test(map.get(new Key(18)) == 18);
-//         map.print();
+        // map.print();
     }
 
     @Test

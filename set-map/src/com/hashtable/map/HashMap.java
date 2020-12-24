@@ -254,7 +254,7 @@ public class HashMap<K, V> implements Map<K, V> {
         Queue<Node<K, V>> queue = new LinkedList<>();
         for (int i = 0; i < oldTable.length; i++) {
             if (oldTable[i] == null) continue;
-
+            // 层序遍历
             queue.offer(oldTable[i]);
             while (!queue.isEmpty()) {
                 Node<K, V> node = queue.poll();
@@ -270,6 +270,10 @@ public class HashMap<K, V> implements Map<K, V> {
         }
     }
 
+    /**
+     * 将之前哈希表中的节点, 挪动到扩容后的哈希表中
+     * @param newNode
+     */
     private void moveNode(Node<K, V> newNode) {
         // 首先重置挪动过来node的left,right,parent
         newNode.parent = null;

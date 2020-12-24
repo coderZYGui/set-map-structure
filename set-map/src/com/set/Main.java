@@ -19,7 +19,7 @@ public class Main {
 
     }
 
-    static void testSet(Set<String> set, String[] words) {
+    public void testSet(Set<String> set, String[] words) {
         for (int i = 0; i < words.length; i++) {
             set.add(words[i]);
         }
@@ -39,6 +39,7 @@ public class Main {
         String[] words = fileInfo.words();
         System.out.println("单词数量：" + words.length);
 
+        // 使用链表实现的ListSet来测试
 //        Times.test("ListSet", new Times.Task() {
 //            @Override
 //            public void execute() {
@@ -46,7 +47,8 @@ public class Main {
 //            }
 //        });
 
-        Times.test("TreeSet", () -> testSet(new TreeSet<>(), words));
+        // 使用红黑树实现的TreeSet来测试
+         Times.test("TreeSet", () -> testSet(new TreeSet<>(), words));
     }
 
     @Test
