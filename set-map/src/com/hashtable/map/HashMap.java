@@ -67,7 +67,8 @@ public class HashMap<K, V> implements Map<K, V> {
         // 取出index位置(数组中)的红黑树根节点(因为哈希表中存储的就是红黑树的根节点(键值对))
         Node<K, V> root = table[index];
         if (root == null) {
-            root = new Node<>(key, value, null);
+            //root = new Node<>(key, value, null);
+            root = createNode(key, value, null);
             table[index] = root;
             size++;
             // 修复红黑树性质
@@ -137,7 +138,8 @@ public class HashMap<K, V> implements Map<K, V> {
             }
         } while (node != null);
         // 看看插入到父节点的哪个位置
-        Node<K, V> newNode = new Node<>(key, value, parent);
+        //Node<K, V> newNode = new Node<>(key, value, parent);
+        Node<K, V> newNode = createNode(key, value, parent);
         if (cmp > 0) {
             parent.right = newNode;
         } else {
@@ -243,6 +245,17 @@ public class HashMap<K, V> implements Map<K, V> {
         }
     }
 
+    protected Node<K, V> createNode(K key, V value, Node<K, V> parent) {
+        return new Node<>(key, value, parent);
+    }
+
+    /**
+     * @param willNode   即将要删除的节点
+     * @param removeNode 实际删除的节点
+     */
+    protected void afterChildRemove(Node<K, V> willNode, Node<K, V> removeNode) {
+    }
+
     /**
      * 扩容
      */
@@ -272,6 +285,7 @@ public class HashMap<K, V> implements Map<K, V> {
 
     /**
      * 将之前哈希表中的节点, 挪动到扩容后的哈希表中
+     *
      * @param newNode
      */
     private void moveNode(Node<K, V> newNode) {
@@ -332,8 +346,10 @@ public class HashMap<K, V> implements Map<K, V> {
         afterPut(newNode);
     }
 
-    private V remove(Node<K, V> node) {
+    protected V remove(Node<K, V> node) {
         if (node == null) return null;
+        Node<K, V> willNode = node; // 本来要删除的节点,由于红黑树中度为2的节点删除方式, 和链表中的删除方式不同,所以要做交换
+
         // node 不为空, 必然要删除结点, 先size--;
         size--;
 
@@ -391,6 +407,8 @@ public class HashMap<K, V> implements Map<K, V> {
             // 删除结点之后的处理
             afterRemove(node, null);
         }
+        // 交给子类处理的
+        afterChildRemove(willNode, node);
         return oldValue;
     }
 
@@ -832,7 +850,7 @@ public class HashMap<K, V> implements Map<K, V> {
         return colorOf(node) == RED;
     }
 
-    private static class Node<K, V> {
+    protected static class Node<K, V> {
         int hash;
         K key;
         V value;

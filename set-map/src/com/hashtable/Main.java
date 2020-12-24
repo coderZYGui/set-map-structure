@@ -3,6 +3,7 @@ package com.hashtable;
 import com.hashtable.file.FileInfo;
 import com.hashtable.file.Files;
 import com.hashtable.map.HashMap;
+import com.hashtable.map.LinkedHashMap;
 import com.hashtable.map.Map;
 import com.hashtable.model.Key;
 import com.hashtable.model.Person;
@@ -17,6 +18,45 @@ import org.junit.Test;
  * @date 2020/12/11 23:17
  */
 public class Main {
+
+    // ------------------------------------测试LinkedHashMap-------------------------------------------
+
+    @Test
+    public void testLinkedHashMap() {
+        HashMap<Object, Integer> map = new LinkedHashMap<>();
+        map.put("jack", 1);
+        map.put("rose", 2);
+        map.remove("rose");
+        map.put("jim", 3);
+        map.put("jake", 4);
+        for (int i = 1; i <= 10; i++) {
+            map.put("test" + i, i);
+            map.put(new Key(i), i);
+        }
+        for (int i = 5; i <= 7; i++) {
+            Assert.test(map.remove(new Key(i)) == i);
+        }
+        for (int i = 1; i <= 3; i++) {
+            map.put(new Key(i), i + 5);
+        }
+        Assert.test(map.size() == 20);
+        Assert.test(map.get(new Key(1)) == 6);
+        Assert.test(map.get(new Key(2)) == 7);
+        Assert.test(map.get(new Key(3)) == 8);
+        Assert.test(map.get(new Key(4)) == 4);
+        Assert.test(map.get(new Key(5)) == null);
+        Assert.test(map.get(new Key(6)) == null);
+        Assert.test(map.get(new Key(7)) == null);
+        Assert.test(map.get(new Key(8)) == 8);
+        map.traversal(new Map.Visitor<Object, Integer>() {
+            public boolean visit(Object key, Integer value) {
+                System.out.println(key + "_" + value);
+                return false;
+            }
+        });
+    }
+
+    // ------------------------------------测试LinkedHashMap-------------------------------------------
 
     public void testMap(Map<String, Integer> map, String[] words) {
         Times.test(map.getClass().getName(), new Times.Task() {
@@ -74,8 +114,8 @@ public class Main {
         map.put("rose", 2);
         map.put("jim", 3);
         map.put("jake", 4);
-        map.remove("jack");
-        map.remove("jim");
+        // map.remove("jack");
+        // map.remove("jim");
         for (int i = 1; i <= 10; i++) {
             map.put("test" + i, i);
             map.put(new Key(i), i);
@@ -86,7 +126,7 @@ public class Main {
         for (int i = 1; i <= 3; i++) {
             map.put(new Key(i), i + 5);
         }
-        Assert.test(map.size() == 19);
+        Assert.test(map.size() == 21);
         Assert.test(map.get(new Key(1)) == 6);
         Assert.test(map.get(new Key(2)) == 7);
         Assert.test(map.get(new Key(3)) == 8);
