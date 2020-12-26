@@ -19,6 +19,7 @@ public class HashMap<K, V> implements Map<K, V> {
     private static final boolean RED = false;
     private static final boolean BLACK = true;
     private static final int DEFAULT_CAPACITY = 1 << 4;
+    // 装载因子, 当哈希表容量为table.length用到75%就进行扩容
     private static final float DEFAULT_LOAD_FACTOR = 0.75f;
 
     private int size;   // HashMap的容量(哈希表容量), 用来记录存放多少个entry(键值对)
@@ -245,6 +246,13 @@ public class HashMap<K, V> implements Map<K, V> {
         }
     }
 
+    /**
+     * 为了拓展, HashMap子类可以创建自己的Node结点
+     * @param key
+     * @param value
+     * @param parent
+     * @return
+     */
     protected Node<K, V> createNode(K key, V value, Node<K, V> parent) {
         return new Node<>(key, value, parent);
     }
